@@ -11,6 +11,15 @@ provider "azurerm" {
   features {}
 }
 
+terraform {
+    backend "azurerm" {
+        resource_group_name  = "terraform-rg"
+        storage_account_name = "nkstoaccount1"
+        container_name       = "weatherapitfstatefile"
+        key                  = "terraform.tfstate"
+    }
+}
+
 
 resource "azurerm_resource_group" "tf_test" {
   name = "tfmainrg"

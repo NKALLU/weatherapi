@@ -13,7 +13,7 @@ variables:
 
 stages:
 - stage: Build
-  displayName: Build image
+  displayName: Build Docker image
   jobs:
   - job: Build
     displayName: Build
@@ -28,3 +28,29 @@ stages:
         Dockerfile: '**/Dockerfile'
         tags: |
           $(tag)
+
+- stage: Provision
+  displayName: 'Terraforming on Azure...'
+  dependsOn: Build
+  jobs:
+  - job: Provision
+    displayName: 'Provisioning Container Instance'
+    pool:
+      vmImage: 'ubuntu-latest'
+    variables: 
+    - group: tfazdemokeyvault
+    steps:
+        - script: |
+            set -e
+
+            terraform init -input=false
+            terraform apply -input=false -auto-approve
+          name: 'RunTerraform'
+          displayName: 'Run Terraform'
+          env:
+            ARM_CLIENT_ID: $(terraform-sp-clientid)
+            ARM_CLIENT_SECRET: $(terraform-sp-secret)
+            ARM_TENANT_ID: $(terraform-sp-tenantid)
+            ARM_SUBSCRIPTION_ID: $(terraform-sp-subid)
+            TF_VAR_imagebuild: $(tag)
+          
